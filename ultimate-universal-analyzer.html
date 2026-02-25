@@ -218,6 +218,118 @@
 
 <body class="min-h-screen">
 
+    <!-- ============================================================
+         API KEY SETUP MODAL — Shown on first visit or when keys are missing.
+         Keys stored in localStorage only — NEVER in source code.
+         ============================================================ -->
+    <div id="setupModal"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md hidden">
+        <div
+            class="glass rounded-2xl p-8 max-w-lg w-full mx-4 border border-indigo-500/30 shadow-2xl shadow-indigo-900/50">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black uppercase tracking-widest text-white">API Key Setup</h2>
+                    <p class="text-[11px] text-slate-400">Keys are stored only in your browser. Never shared.</p>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-1">FMP Key 1
+                        <span class="text-rose-400">*</span></label>
+                    <input id="setupFmp1" type="password" placeholder="Financial Modeling Prep Key 1"
+                        class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50" />
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-1">FMP Key 2
+                        (backup)</label>
+                    <input id="setupFmp2" type="password" placeholder="Financial Modeling Prep Key 2 (optional)"
+                        class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50" />
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-1">Alpha
+                        Vantage Key</label>
+                    <input id="setupAv" type="password" placeholder="Alpha Vantage API Key (optional fallback)"
+                        class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50" />
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-1">Gemini Key
+                        1 <span class="text-rose-400">*</span></label>
+                    <input id="setupG1" type="password" placeholder="Google Gemini AI Key (Primary)"
+                        class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50" />
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-1">Gemini Keys
+                        2, 3, 4 (backup — comma separated)</label>
+                    <input id="setupGExtra" type="password" placeholder="key2,key3,key4 (optional)"
+                        class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50" />
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 mt-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-[10px] text-amber-300">Keys are saved only in <strong>this browser</strong> via
+                    localStorage. Clearing browser data will require re-entering them.</p>
+            </div>
+
+            <div class="flex gap-3 mt-5">
+                <button id="setupSaveBtn" onclick="saveApiKeys()"
+                    class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm py-2.5 rounded-xl transition-all uppercase tracking-widest">
+                    Save & Launch
+                </button>
+                <button onclick="document.getElementById('setupModal').classList.add('hidden')"
+                    class="px-4 bg-white/5 hover:bg-white/10 text-slate-400 text-sm py-2.5 rounded-xl transition-all">
+                    Skip
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function saveApiKeys() {
+            const fmp1 = document.getElementById('setupFmp1').value.trim();
+            const fmp2 = document.getElementById('setupFmp2').value.trim();
+            const av = document.getElementById('setupAv').value.trim();
+            const g1 = document.getElementById('setupG1').value.trim();
+            const gExtra = document.getElementById('setupGExtra').value.trim().split(',').map(k => k.trim()).filter(k => k);
+
+            if (!fmp1 && !g1) {
+                alert('Please enter at least your FMP Key 1 and Gemini Key 1 to use the analyzer.');
+                return;
+            }
+            if (fmp1) localStorage.setItem('CFG_FMP1', fmp1);
+            if (fmp2) localStorage.setItem('CFG_FMP2', fmp2);
+            if (av) localStorage.setItem('CFG_AV', av);
+            if (g1) localStorage.setItem('CFG_G1', g1);
+            if (gExtra[0]) localStorage.setItem('CFG_G2', gExtra[0]);
+            if (gExtra[1]) localStorage.setItem('CFG_G3', gExtra[1]);
+            if (gExtra[2]) localStorage.setItem('CFG_G4', gExtra[2]);
+
+            document.getElementById('setupModal').classList.add('hidden');
+            location.reload(); // Reload so CONFIG picks up the new keys
+        }
+
+        // Show setup modal if no keys are configured yet
+        window.addEventListener('DOMContentLoaded', () => {
+            const hasKeys = localStorage.getItem('CFG_FMP1') || localStorage.getItem('CFG_G1');
+            if (!hasKeys) {
+                document.getElementById('setupModal').classList.remove('hidden');
+            }
+        });
+    </script>
+
+
     <nav
         class="p-6 flex justify-between items-center border-b border-white/5 sticky top-0 bg-[var(--nav-bg)] backdrop-blur-xl z-[100]">
         <div class="flex items-center gap-3">
@@ -660,35 +772,46 @@
 
         lucide.createIcons();
 
-        // Configuration - Source of Truth: .env file
-        // Note: In a production build (React/Vite), these would be process.env.FMP_KEY_1 etc.
+        // ============================================================
+        // SECURE CONFIGURATION — Keys loaded from localStorage only
+        // Keys are NEVER hardcoded here. Users enter them once via the
+        // setup modal and they are stored only in their own browser.
+        // ============================================================
+        function loadKeys() {
+            return {
+                fmp1: localStorage.getItem('CFG_FMP1') || '',
+                fmp2: localStorage.getItem('CFG_FMP2') || '',
+                av: localStorage.getItem('CFG_AV') || '',
+                gemini1: localStorage.getItem('CFG_G1') || '',
+                gemini2: localStorage.getItem('CFG_G2') || '',
+                gemini3: localStorage.getItem('CFG_G3') || '',
+                gemini4: localStorage.getItem('CFG_G4') || '',
+            };
+        }
+
+        const _k = loadKeys();
+
         const CONFIG = {
             FMP: {
-                KEY_1: 'dbNyRfQKgqKOXmFXI0FJaTaFIWrzkfnN', // See .env
-                KEY_2: 'xlrQDPgTlbOnjTRR4OxMXyJnP6TDZ4GA'  // See .env
+                KEY_1: _k.fmp1,
+                KEY_2: _k.fmp2
             },
             ALPHA_VANTAGE: {
-                KEY: 'DIX5W4U2T2050FIF' // See .env
+                KEY: _k.av
             },
             GEMINI: {
-                KEYS: [
-                    'AIzaSyCMcvEzq9wHn87s0i36TTcgE_7ISgS3ayE', // Key 4 (Newest Primary)
-                    'AIzaSyBWD8udg4-569Vr-ptfIco6Vj3K0HgpupU', // Key 3 
-                    'AIzaSyCvS_NB3elNf_iYZfdDQFcE5rZHyZZMP8M', // Key 1
-                    'AIzaSyCObfOzuecN_aNE88Mlq-r7WdO-cIXmKhM'  // Key 2
-                ]
+                KEYS: [_k.gemini1, _k.gemini2, _k.gemini3, _k.gemini4].filter(k => k.length > 10)
             },
             // ⚠️ CRITICAL: DYNAMIC MARKET DATA (UPDATED VIA API)
             MARKET_PARAMS: {
-                RISK_FREE_RATE: 7.1, // India 10Y G-Sec
-                MARKET_RETURN: 12.0, // Fallback Default
+                RISK_FREE_RATE: 7.1,       // India 10Y G-Sec
+                MARKET_RETURN: 12.0,       // Fallback Default
                 BENCHMARK_SYMBOL: '^NSEI', // Nifty 50
-                REAL_TIME_RETURNS: null // Will be populated by fetchBenchmarkData
+                REAL_TIME_RETURNS: null    // Will be populated by fetchBenchmarkData
             }
         };
 
-        // Initialize from CONFIG (Source: .env)
-        // These let variables allow runtime updates via the UI
+        // Initialize from CONFIG
         let currentGeminiKey = (CONFIG.GEMINI.KEYS && CONFIG.GEMINI.KEYS.length > 0) ? CONFIG.GEMINI.KEYS[0] : null;
         let alphaVantageKey = CONFIG.ALPHA_VANTAGE.KEY;
 
