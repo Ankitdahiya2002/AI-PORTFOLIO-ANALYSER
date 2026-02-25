@@ -1,0 +1,17 @@
+# Environment Variables (API Keys - DO NOT commit)
+.env
+
+# Backup folder
+*_Backup_*/
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
