@@ -8,7 +8,6 @@
     <!-- Premium UI Stack -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link
@@ -768,45 +767,23 @@
         lucide.createIcons();
 
         // ============================================================
-        // SUPABASE CLIENT — Portfolio data storage
+        // PORTFOLIO STORAGE — Calls secure serverless API (keys hidden)
         // ============================================================
-        const SUPABASE_URL = 'https://wkcufcekxfxjgboatyov.supabase.co';
-        // ⚠️  Use the ANON PUBLIC key (Project Settings → API → anon public)
-        // NEVER use the service_role key in frontend code.
-        const SUPABASE_ANON_KEY = 'PASTE_YOUR_ANON_KEY_HERE';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         async function saveToSupabase(holdings, fileName) {
             try {
-                const uploadId = crypto.randomUUID();
-                const uploadedAt = new Date().toISOString();
-
-                const rows = holdings.map(h => ({
-                    upload_id:    uploadId,
-                    uploaded_at:  uploadedAt,
-                    file_name:    fileName || 'unknown',
-                    symbol:       h.symbol,
-                    quantity:     h.qty,
-                    avg_price:    h.avg,
-                    ltp:          h.ltp,
-                    current_value: h.val,
-                    pnl:          h.pnl,
-                    sector:       h.sector || null,
-                    asset_class:  h.asset || null,
-                    market_cap:   h.marketCap || null,
-                    beta:         h.beta || null,
-                    pe_ratio:     h.pe || null,
-                    data_source:  h.dataSource || null
-                }));
-
-                const { error } = await supabase.from('portfolio_uploads').insert(rows);
-                if (error) {
-                    console.error('❌ Supabase save failed:', error.message);
+                const res = await fetch('/api/save-portfolio', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ holdings, fileName })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    console.log(`✅ Portfolio saved: ${result.saved} holdings (ID: ${result.upload_id})`);
                 } else {
-                    console.log(`✅ Supabase: ${rows.length} holdings saved (upload_id: ${uploadId})`);
+                    console.error('❌ Save failed:', result.error);
                 }
             } catch (err) {
-                console.error('❌ Supabase error:', err);
+                console.error('❌ API error:', err);
             }
         }
 
