@@ -1,7 +1,6 @@
 {
     "functions": {
         "api/save-portfolio.js": {
-            "memory": 128,
             "maxDuration": 10
         }
     }
