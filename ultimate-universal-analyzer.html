@@ -320,13 +320,7 @@
             location.reload(); // Reload so CONFIG picks up the new keys
         }
 
-        // Show setup modal if no keys are configured yet
-        window.addEventListener('DOMContentLoaded', () => {
-            const hasKeys = localStorage.getItem('CFG_FMP1') || localStorage.getItem('CFG_G1');
-            if (!hasKeys) {
-                document.getElementById('setupModal').classList.remove('hidden');
-            }
-        });
+        // Setup modal is NOT auto-shown on startup — user can open it manually if needed.
     </script>
 
 
