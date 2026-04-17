@@ -771,8 +771,10 @@
         // SUPABASE CLIENT — Portfolio data storage
         // ============================================================
         const SUPABASE_URL = 'https://wkcufcekxfxjgboatyov.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrY3VmY2VreGZ4amdib2F0eW92Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTM4NTE4MCwiZXhwIjoyMDkwOTYxMTgwfQ.yRncTBKqB1XqCsUzxyOV1wjlzNuNRfFppur1oL0sw9M';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ⚠️  Use the ANON PUBLIC key (Project Settings → API → anon public)
+        // NEVER use the service_role key in frontend code.
+        const SUPABASE_ANON_KEY = 'PASTE_YOUR_ANON_KEY_HERE';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function saveToSupabase(holdings, fileName) {
             try {
