@@ -8,6 +8,7 @@
     <!-- Premium UI Stack -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link
@@ -767,6 +768,47 @@
         lucide.createIcons();
 
         // ============================================================
+        // SUPABASE CLIENT — Portfolio data storage
+        // ============================================================
+        const SUPABASE_URL = 'https://wkcufcekxfxjgboatyov.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrY3VmY2VreGZ4amdib2F0eW92Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTM4NTE4MCwiZXhwIjoyMDkwOTYxMTgwfQ.yRncTBKqB1XqCsUzxyOV1wjlzNuNRfFppur1oL0sw9M';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function saveToSupabase(holdings, fileName) {
+            try {
+                const uploadId = crypto.randomUUID();
+                const uploadedAt = new Date().toISOString();
+
+                const rows = holdings.map(h => ({
+                    upload_id:    uploadId,
+                    uploaded_at:  uploadedAt,
+                    file_name:    fileName || 'unknown',
+                    symbol:       h.symbol,
+                    quantity:     h.qty,
+                    avg_price:    h.avg,
+                    ltp:          h.ltp,
+                    current_value: h.val,
+                    pnl:          h.pnl,
+                    sector:       h.sector || null,
+                    asset_class:  h.asset || null,
+                    market_cap:   h.marketCap || null,
+                    beta:         h.beta || null,
+                    pe_ratio:     h.pe || null,
+                    data_source:  h.dataSource || null
+                }));
+
+                const { error } = await supabase.from('portfolio_uploads').insert(rows);
+                if (error) {
+                    console.error('❌ Supabase save failed:', error.message);
+                } else {
+                    console.log(`✅ Supabase: ${rows.length} holdings saved (upload_id: ${uploadId})`);
+                }
+            } catch (err) {
+                console.error('❌ Supabase error:', err);
+            }
+        }
+
+        // ============================================================
         // SECURE CONFIGURATION — Keys loaded from localStorage only
         // Keys are NEVER hardcoded here. Users enter them once via the
         // setup modal and they are stored only in their own browser.
@@ -1064,9 +1106,12 @@
             return holdings;
         }
 
+        let _currentFileName = 'portfolio';
+
         function handleFileSelect(event) {
             try {
                 const file = event.target.files[0];
+                _currentFileName = file ? file.name : 'portfolio';
                 if (!file) return;
 
                 // Check if core engine is loaded
@@ -1497,6 +1542,8 @@
                     enrichHoldingsWithLiveData(holdings).then(enrichedHoldings => {
                         console.log('Live data received, updating...');
                         renderDashboard(enrichedHoldings);
+                        // 💾 Save enriched portfolio to Supabase
+                        saveToSupabase(enrichedHoldings, _currentFileName);
                     });
                 });
             } else {
